@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rentenbeginn- & Rentenhöhenrechner</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ═══════════════════════════════════════════════════════════════
+   G-DESIGN — Template v1.1
+   ═══════════════════════════════════════════════════════════════ */
+
+:root,[data-theme="dark"]{
+  --bg:#0c1410;--surface:#13201a;--surface2:#192b22;--border:#213328;
+  --accent:#5d9e7a;--accent-lt:#89c4a2;--accent-dim:rgba(93,158,122,0.13);
+  --text:#ddeee5;--text-muted:#6e9480;
+}
+[data-theme="light"]{
+  --bg:#f0f7f3;--surface:#ffffff;--surface2:#e6f2eb;--border:#bdd8c8;
+  --accent:#2e7a50;--accent-lt:#1e5c3a;--accent-dim:rgba(46,122,80,0.10);
+  --text:#0f1f16;--text-muted:#4d7a5e;
+}
+@media(prefers-color-scheme:light){
+  :root:not([data-theme]){
+    --bg:#f0f7f3;--surface:#ffffff;--surface2:#e6f2eb;--border:#bdd8c8;
+    --accent:#2e7a50;--accent-lt:#1e5c3a;--accent-dim:rgba(46,122,80,0.10);
+    --text:#0f1f16;--text-muted:#4d7a5e;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;font-weight:300;
+  min-height:100vh;padding:40px 20px 80px;
+  transition:background .25s,color .25s;
+  font-feature-settings:"ss01";
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(93,158,122,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(93,158,122,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.container{max-width:960px;margin:0 auto;position:relative;z-index:1;}
+.theme-toggle{position:fixed;top:18px;right:20px;display:flex;gap:3px;z-index:1000;background:var(--surface);border:1px solid var(--border);padding:4px;}
+.theme-btn{width:28px;height:28px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .2s;padding:0;}
+.theme-btn:hover{color:var(--accent);}
+.theme-btn.active{color:var(--accent);background:var(--accent-dim);}
+.theme-btn svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,44px);font-weight:600;line-height:1.15;color:var(--text);margin-bottom:10px;}
+h1 span{color:var(--accent);}
+.subtitle{font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:0.5px;}
+.card-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:18px;}
+.hint{font-size:10px;color:var(--text-muted);margin-top:5px;font-family:'IBM Plex Mono',monospace;line-height:1.5;}
+.disclaimer{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);line-height:1.7;opacity:.7;margin-top:32px;}
+footer{text-align:center;padding:32px 0 0;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);opacity:.6;}
+
+/* ═══════════════════════════════════════════════════════════════
+   APP-SPEZIFISCHES CSS
+   ═══════════════════════════════════════════════════════════════ */
+
+.card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);padding:28px 32px;margin-bottom:20px;}
+label{display:block;margin-bottom:16px;}
+.label-text{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px;}
+input[type="date"],input[type="number"],input[type="text"],select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:14px;
+  padding:10px 14px;outline:none;transition:border-color .2s;
+  -webkit-appearance:none;appearance:none;
+}
+input:focus,select:focus{border-color:var(--accent);}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e9480' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+
+.radio-group{display:flex;gap:12px;margin-top:6px;}
+.radio-option{flex:1;}
+.radio-option input[type="radio"]{display:none;}
+.radio-option label{
+  display:block;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);
+  font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.radio-option input[type="radio"]:checked + label{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+.radio-option label:hover{border-color:var(--accent);}
+
+.btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn:hover{opacity:.85;}
+.btn-sec{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-sec:hover{border-color:var(--accent);color:var(--accent);}
+
+.result-box{display:none;background:var(--accent-dim);border:1px solid var(--accent);border-left:3px solid var(--accent);padding:24px 28px;margin-top:24px;}
+.result-value{font-family:'Playfair Display',serif;font-size:32px;color:var(--accent);margin:8px 0;}
+.result-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);}
+
+/* Ergebnistabelle */
+.renten-table{width:100%;border-collapse:collapse;margin-top:16px;}
+.renten-table th{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.renten-table td{font-family:'IBM Plex Mono',monospace;font-size:12px;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);}
+.renten-table tr:last-child td{border-bottom:none;}
+.renten-table .abschlag{color:#e07070;font-weight:500;}
+.renten-table .ok{color:var(--accent-lt);font-weight:500;}
+.renten-table tr:hover td{background:var(--accent-dim);}
+.renten-table .disabled td{opacity:.4;}
+
+/* Schritt-Tabs */
+.steps{display:flex;gap:4px;margin-bottom:28px;}
+.step{flex:1;padding:8px 4px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--border);color:var(--text-muted);position:relative;}
+.step.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim);}
+.step.done{border-color:var(--accent);color:var(--accent-lt);}
+.step-num{display:block;font-size:14px;font-family:'Playfair Display',serif;margin-bottom:2px;}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+@media(max-width:600px){
+  .grid2{grid-template-columns:1fr;}
+  .steps{flex-wrap:wrap;}
+  .step{flex:calc(50% - 4px);}
+}
+
+/* Info-Box */
+.info-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--text-muted);padding:16px 20px;margin-top:16px;}
+.info-box p{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);line-height:1.7;}
+
+/* Rentenhöhe-Ergebnis */
+.rh-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--border);}
+.rh-row:last-child{border-bottom:none;}
+.rh-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);}
+.rh-val{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text);font-weight:500;}
+.rh-val.accent{color:var(--accent);font-size:18px;}
+
+.sep{border:none;border-top:1px solid var(--border);margin:20px 0;}
+</style>
+</head>
+<body>
+
+<!-- Theme-Toggle -->
+<div class="theme-toggle">
+  <button class="theme-btn" id="btn-dark" onclick="setTheme('dark')" title="Dunkel">
+    <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <button class="theme-btn" id="btn-system" onclick="setTheme('system')" title="System">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  </button>
+  <button class="theme-btn" id="btn-light" onclick="setTheme('light')" title="Hell">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+  </button>
+</div>
+
+<div class="container">
+
+  <header style="text-align:center;margin-bottom:40px;">
+    <h1><span>Renten</span>rechner</h1>
+    <p class="subtitle">Rentenbeginn & Rentenhöhe · §§ 35–42 SGB VI</p>
+  </header>
+
+  <!-- Schritt-Anzeige -->
+  <div class="steps">
+    <div class="step active" id="step-tab-1"><span class="step-num">1</span>Rentenbeginn</div>
+    <div class="step" id="step-tab-2"><span class="step-num">2</span>Ergebnis Beginn</div>
+    <div class="step" id="step-tab-3"><span class="step-num">3</span>Rentenhöhe</div>
+    <div class="step" id="step-tab-4"><span class="step-num">4</span>Ergebnis Höhe</div>
+  </div>
+
+  <!-- ═══ SCHRITT 1: Rentenbeginn-Eingabe ═══ -->
+  <div id="view-1">
+    <div class="card">
+      <div class="card-title">Rentenbeginnrechner</div>
+      <p style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;">
+        Ermittelt den frühestmöglichen und regulären Rentenbeginn aller Altersrenten gemäß §§ 35–42 SGB VI sowie § 236 ff. SGB VI (RV-Altersgrenzenanpassungsgesetz).
+      </p>
+
+      <div class="grid2">
+        <label>
+          <span class="label-text">Geburtsdatum *</span>
+          <input type="date" id="geburtsdatum" max="2010-12-31" min="1940-01-01">
+        </label>
+        <div></div>
+      </div>
+
+      <label>
+        <span class="label-text">Liegt eine Schwerbehinderung vor? (GdB ≥ 50) *</span>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="sb-ja" name="schwerbehindert" value="ja">
+            <label for="sb-ja">Ja</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="sb-nein" name="schwerbehindert" value="nein" checked>
+            <label for="sb-nein">Nein</label>
+          </div>
+        </div>
+      </label>
+
+      <label>
+        <span class="label-text">Sind oder waren Sie im Bergbau tätig? *</span>
+        <div class="radio-group">
+          <div class="radio-option">
+            <input type="radio" id="bb-ja" name="bergbau" value="ja">
+            <label for="bb-ja">Ja</label>
+          </div>
+          <div class="radio-option">
+            <input type="radio" id="bb-nein" name="bergbau" value="nein" checked>
+            <label for="bb-nein">Nein</label>
+          </div>
+        </div>
+      </label>
+
+      <div id="err-1" style="display:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#e07070;margin-bottom:16px;"></div>
+
+      <button class="btn" onclick="berechneRentenbeginn()">Rentenbeginn berechnen →</button>
+    </div>
+
+    <div class="info-box">
+      <p>Der Rechner ermittelt Rentenbeginn für Altersrenten nach SGB VI. Nicht dargestellt werden Erwerbsminderungsrenten, Witwen-/Witwerrenten oder Waisenrenten.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SCHRITT 2: Rentenbeginn-Ergebnis ═══ -->
+  <div id="view-2" style="display:none;">
+    <div class="card">
+      <div class="card-title">Ergebnisse Rentenbeginn</div>
+      <p id="rb-intro" style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;"></p>
+
+      <div style="overflow-x:auto;">
+        <table class="renten-table" id="rb-table">
+          <thead>
+            <tr>
+              <th>Rentenart</th>
+              <th>Rechtsgrundlage</th>
+              <th>Frühest. Beginn</th>
+              <th>Regulärer Beginn</th>
+              <th>Max. Abschlag</th>
+            </tr>
+          </thead>
+          <tbody id="rb-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="info-box" style="margin-top:20px;">
+        <p id="rb-hinweis"></p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-sec" style="width:auto;padding:12px 24px;" onclick="goStep(1)">← Zurück</button>
+      <button class="btn" onclick="goStep(3)">Weiter: Rentenhöhe berechnen →</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCHRITT 3: Rentenhöhe-Eingabe ═══ -->
+  <div id="view-3" style="display:none;">
+    <div class="card">
+      <div class="card-title">Rentenhöhenrechner</div>
+      <p style="font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;">
+        Auf Basis der jährlichen Renteninformation. Die Rente errechnet sich nach der Rentenformel: EP × ZF × RAF × aRW.
+      </p>
+
+      <div class="grid2">
+        <label>
+          <span class="label-text">Persönliche Entgeltpunkte (EP)</span>
+          <input type="text" id="ep" placeholder="z. B. 35,4821" oninput="fmtInputDE(this)" onblur="fmtBlurDE(this)">
+          <span class="hint">Aus der Renteninformation (Zeile „Ihre persönlichen Entgeltpunkte")</span>
+        </label>
+        <label>
+          <span class="label-text">Erwartete EP bis Rentenalter</span>
+          <input type="text" id="ep-zusatz" placeholder="z. B. 12,00" oninput="fmtInputDE(this)" onblur="fmtBlurDE(this)">
+          <span class="hint">Hochrechnung aus der Renteninformation (optional)</span>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label>
+          <span class="label-text">Gewählte Rentenart</span>
+          <select id="rentenart-hoehe">
+            <option value="">— bitte wählen —</option>
+          </select>
+          <span class="hint">Aus Schritt 1 vorbelegt (sofern berechnet)</span>
+        </label>
+        <label>
+          <span class="label-text">Rentenbeginn (Monat/Jahr)</span>
+          <input type="month" id="wunsch-beginn">
+          <span class="hint">Gewünschter Rentenbeginn (ab frühestmöglichem Datum)</span>
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label>
+          <span class="label-text">Aktueller Rentenwert (aRW)</span>
+          <select id="arw">
+            <option value="39.32">39,32 € (West, ab 01.07.2024)</option>
+            <option value="39.32">39,32 € (Ost, ab 01.07.2024)</option>
+            <option value="40.79" selected>40,79 € (West, ab 01.07.2025)</option>
+            <option value="40.79">40,79 € (Ost, ab 01.07.2025)</option>
+          </select>
+          <span class="hint">Gesetzlich festgesetzt; jährliche Anpassung zum 1. Juli</span>
+        </label>
+        <label>
+          <span class="label-text">Zugangsfaktor (ZF)</span>
+          <input type="text" id="zf" placeholder="1,000" oninput="fmtInputDE(this)" onblur="calcZF()">
+          <span class="hint">Wird aus Rentenart + Rentenbeginn automatisch berechnet</span>
+        </label>
+      </div>
+
+      <div id="err-3" style="display:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#e07070;margin-bottom:16px;"></div>
+
+      <button class="btn" onclick="berechneRentenhoehe()">Rentenhöhe berechnen →</button>
+    </div>
+
+    <div style="margin-top:4px;">
+      <button class="btn btn-sec" style="width:auto;padding:12px 24px;" onclick="goStep(2)">← Zurück</button>
+    </div>
+  </div>
+
+  <!-- ═══ SCHRITT 4: Rentenhöhe-Ergebnis ═══ -->
+  <div id="view-4" style="display:none;">
+    <div class="card">
+      <div class="card-title">Ergebnisse Rentenhöhe</div>
+
+      <div id="rh-formel" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:20px;line-height:1.8;"></div>
+
+      <hr class="sep">
+
+      <div id="rh-rows"></div>
+
+      <hr class="sep">
+
+      <div style="text-align:center;padding:16px 0 8px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Monatliche Brutto-Rente</div>
+        <div id="rh-gesamt" class="result-value" style="font-family:'Playfair Display',serif;font-size:42px;color:var(--accent);"></div>
+        <div id="rh-abschlag-info" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#e07070;margin-top:4px;"></div>
+      </div>
+
+      <div class="info-box" style="margin-top:16px;">
+        <p>Die tatsächliche Netto-Rente hängt von Kranken- und Pflegeversicherungsbeiträgen sowie der Besteuerung (§ 22 Nr. 1 EStG, Kohortenprinzip) ab. Diese Berechnung ermittelt ausschließlich die Brutto-Rente.</p>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:4px;">
+      <button class="btn btn-sec" style="width:auto;padding:12px 24px;" onclick="goStep(3)">← Zurück</button>
+      <button class="btn btn-sec" onclick="resetAll()">Neue Berechnung</button>
+    </div>
+  </div>
+
+  <p class="disclaimer">Alle Berechnungen sind Näherungswerte auf Basis der jeweils angegebenen Rechtsgrundlagen. Individuelle Faktoren bleiben unberücksichtigt. Kein Ersatz für individuelle Steuer- oder Rechtsberatung · Alle Angaben ohne Gewähr</p>
+</div>
+
+<footer>© Robin Glowania &nbsp;·&nbsp; Zuletzt aktualisiert: 01.04.2026</footer>
+
+<script>
+/* ── Theme ─────────────────────────────────────────────────── */
+function setTheme(t){
+  if(t==='system'){document.documentElement.removeAttribute('data-theme');}
+  else{document.documentElement.setAttribute('data-theme',t);}
+  try{localStorage.setItem('g-theme',t);}catch(e){}
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('active'));
+  var btn=document.getElementById('btn-'+t);
+  if(btn)btn.classList.add('active');
+}
+(function(){var s='system';try{s=localStorage.getItem('g-theme')||'system';}catch(e){}setTheme(s);})();
+
+/* ── Hilfsfunktionen ───────────────────────────────────────── */
+function fmtInputDE(el){
+  // Beim Tippen: nur Komma statt Punkt erlauben, sonst nix formatieren
+  el.value=el.value.replace(/[^0-9,]/g,'');
+}
+function fmtBlurDE(el){
+  var raw=el.value.replace(',','.');
+  var n=parseFloat(raw);
+  if(!isNaN(n)){el.value=n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:4});}
+}
+function parseDE(str){
+  if(!str)return NaN;
+  return parseFloat(str.replace(/\./g,'').replace(',','.'));
+}
+function fmtEuro(n){return n.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';}
+
+/* ── Schritt-Navigation ────────────────────────────────────── */
+var currentStep=1;
+function goStep(n){
+  for(var i=1;i<=4;i++){
+    document.getElementById('view-'+i).style.display=n===i?'block':'none';
+    var tab=document.getElementById('step-tab-'+i);
+    tab.classList.remove('active','done');
+    if(i===n)tab.classList.add('active');
+    else if(i<n)tab.classList.add('done');
+  }
+  currentStep=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENTENBEGINN-LOGIK (§§ 35-42, 236-246 SGB VI)
+   ══════════════════════════════════════════════════════════════ */
+
+// Reguläre Altersgrenze: gestaffelt nach Geburtsjahr (§ 235 SGB VI)
+function regelAltersgrenze(gebJahr, gebMonat){
+  // Anhebungsfahrplan Regelaltersgrenze auf 67 (§ 235 SGB VI)
+  if(gebJahr<1947) return {j:65,m:0};
+  if(gebJahr===1947) return {j:65,m:1};
+  if(gebJahr===1948) return {j:65,m:2};
+  if(gebJahr===1949) return {j:65,m:3};
+  if(gebJahr===1950) return {j:65,m:4};
+  if(gebJahr===1951) return {j:65,m:5};
+  if(gebJahr===1952) return {j:65,m:6};
+  if(gebJahr===1953) return {j:65,m:7};
+  if(gebJahr===1954) return {j:65,m:8};
+  if(gebJahr===1955) return {j:65,m:9};
+  if(gebJahr===1956) return {j:65,m:10};
+  if(gebJahr===1957) return {j:65,m:11};
+  if(gebJahr===1958) return {j:66,m:0};
+  if(gebJahr===1959) return {j:66,m:2};
+  if(gebJahr===1960) return {j:66,m:4};
+  if(gebJahr===1961) return {j:66,m:6};
+  if(gebJahr===1962) return {j:66,m:8};
+  if(gebJahr===1963) return {j:66,m:10};
+  return {j:67,m:0}; // ab 1964
+}
+
+// Altersrente für langjährig Versicherte (§ 236 SGB VI): Anhebung auf 67
+// Frühestmöglich: 63 (mit 35 Jahren WZ) — ohne Abschlag erst nach Anhebungsplan
+function altersgrenzeLangj(gebJahr){
+  // Frühestens ab 63, regulär gestaffelt
+  if(gebJahr<=1948) return {fruh:{j:63,m:0}, reg:{j:65,m:0}, maxAbschlag:7.2};
+  if(gebJahr===1949) return {fruh:{j:63,m:0}, reg:{j:65,m:3}, maxAbschlag:null};
+  if(gebJahr===1950) return {fruh:{j:63,m:0}, reg:{j:65,m:4}, maxAbschlag:null};
+  if(gebJahr===1951) return {fruh:{j:63,m:0}, reg:{j:65,m:5}, maxAbschlag:null};
+  if(gebJahr===1952) return {fruh:{j:63,m:0}, reg:{j:65,m:6}, maxAbschlag:null};
+  if(gebJahr===1953) return {fruh:{j:63,m:0}, reg:{j:65,m:7}, maxAbschlag:null};
+  if(gebJahr===1954) return {fruh:{j:63,m:0}, reg:{j:65,m:8}, maxAbschlag:null};
+  if(gebJahr===1955) return {fruh:{j:63,m:0}, reg:{j:65,m:9}, maxAbschlag:null};
+  if(gebJahr===1956) return {fruh:{j:63,m:0}, reg:{j:65,m:10}, maxAbschlag:null};
+  if(gebJahr===1957) return {fruh:{j:63,m:0}, reg:{j:65,m:11}, maxAbschlag:null};
+  if(gebJahr===1958) return {fruh:{j:63,m:0}, reg:{j:66,m:0}, maxAbschlag:null};
+  if(gebJahr===1959) return {fruh:{j:63,m:0}, reg:{j:66,m:2}, maxAbschlag:null};
+  if(gebJahr===1960) return {fruh:{j:63,m:0}, reg:{j:66,m:4}, maxAbschlag:null};
+  if(gebJahr===1961) return {fruh:{j:63,m:0}, reg:{j:66,m:6}, maxAbschlag:null};
+  if(gebJahr===1962) return {fruh:{j:63,m:0}, reg:{j:66,m:8}, maxAbschlag:null};
+  if(gebJahr===1963) return {fruh:{j:63,m:0}, reg:{j:66,m:10}, maxAbschlag:null};
+  return {fruh:{j:63,m:0}, reg:{j:67,m:0}, maxAbschlag:null};
+}
+
+// Altersrente für besonders langjährig Versicherte (§ 38 SGB VI, § 236b SGB VI)
+// 45 WZ-Jahre → abschlagsfrei; kein vorzeitiger Bezug mit Abschlag
+function altersgrenzeBesLangj(gebJahr){
+  if(gebJahr<=1951) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
+  if(gebJahr===1952) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
+  if(gebJahr===1953) return {fruh:{j:63,m:2}, reg:{j:63,m:2}};
+  if(gebJahr===1954) return {fruh:{j:63,m:4}, reg:{j:63,m:4}};
+  if(gebJahr===1955) return {fruh:{j:63,m:6}, reg:{j:63,m:6}};
+  if(gebJahr===1956) return {fruh:{j:63,m:8}, reg:{j:63,m:8}};
+  if(gebJahr===1957) return {fruh:{j:63,m:10}, reg:{j:63,m:10}};
+  if(gebJahr===1958) return {fruh:{j:64,m:0}, reg:{j:64,m:0}};
+  if(gebJahr===1959) return {fruh:{j:64,m:2}, reg:{j:64,m:2}};
+  if(gebJahr===1960) return {fruh:{j:64,m:4}, reg:{j:64,m:4}};
+  if(gebJahr===1961) return {fruh:{j:64,m:6}, reg:{j:64,m:6}};
+  if(gebJahr===1962) return {fruh:{j:64,m:8}, reg:{j:64,m:8}};
+  if(gebJahr===1963) return {fruh:{j:64,m:10}, reg:{j:64,m:10}};
+  return {fruh:{j:65,m:0}, reg:{j:65,m:0}};
+}
+
+// Korrigierte Version
+function altersgrenzeBesLangjV2(gebJahr){
+  if(gebJahr<=1952) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
+  if(gebJahr===1953) return {fruh:{j:63,m:2}, reg:{j:63,m:2}};
+  if(gebJahr===1954) return {fruh:{j:63,m:4}, reg:{j:63,m:4}};
+  if(gebJahr===1955) return {fruh:{j:63,m:6}, reg:{j:63,m:6}};
+  if(gebJahr===1956) return {fruh:{j:63,m:8}, reg:{j:63,m:8}};
+  if(gebJahr===1957) return {fruh:{j:63,m:10}, reg:{j:63,m:10}};
+  if(gebJahr===1958) return {fruh:{j:64,m:0}, reg:{j:64,m:0}};
+  if(gebJahr===1959) return {fruh:{j:64,m:2}, reg:{j:64,m:2}};
+  if(gebJahr===1960) return {fruh:{j:64,m:4}, reg:{j:64,m:4}};
+  if(gebJahr===1961) return {fruh:{j:64,m:6}, reg:{j:64,m:6}};
+  if(gebJahr===1962) return {fruh:{j:64,m:8}, reg:{j:64,m:8}};
+  if(gebJahr===1963) return {fruh:{j:64,m:10}, reg:{j:64,m:10}};
+  return {fruh:{j:65,m:0}, reg:{j:65,m:0}};
+}
+
+// Altersrente für schwerbehinderte Menschen (§ 37 SGB VI, § 236a SGB VI)
+function altersgrenzeSB(gebJahr){
+  if(gebJahr<=1940) return {fruh:{j:60,m:0}, reg:{j:63,m:0}, maxAbschlag:10.8};
+  if(gebJahr===1941) return {fruh:{j:60,m:0}, reg:{j:63,m:3}, maxAbschlag:null};
+  if(gebJahr===1942) return {fruh:{j:60,m:0}, reg:{j:63,m:6}, maxAbschlag:null};
+  if(gebJahr===1943) return {fruh:{j:60,m:0}, reg:{j:63,m:9}, maxAbschlag:null};
+  if(gebJahr===1944) return {fruh:{j:60,m:0}, reg:{j:64,m:0}, maxAbschlag:null};
+  if(gebJahr<=1945) return {fruh:{j:60,m:3}, reg:{j:64,m:3}, maxAbschlag:null};
+  if(gebJahr===1946) return {fruh:{j:60,m:6}, reg:{j:64,m:6}, maxAbschlag:null};
+  if(gebJahr===1947) return {fruh:{j:60,m:9}, reg:{j:64,m:9}, maxAbschlag:null};
+  if(gebJahr===1948) return {fruh:{j:61,m:0}, reg:{j:65,m:0}, maxAbschlag:null};
+  if(gebJahr===1949) return {fruh:{j:61,m:2}, reg:{j:65,m:2}, maxAbschlag:null};
+  if(gebJahr===1950) return {fruh:{j:61,m:4}, reg:{j:65,m:4}, maxAbschlag:null};
+  if(gebJahr===1951) return {fruh:{j:61,m:6}, reg:{j:65,m:6}, maxAbschlag:null};
+  if(gebJahr===1952) return {fruh:{j:61,m:8}, reg:{j:65,m:8}, maxAbschlag:null};
+  if(gebJahr===1953) return {fruh:{j:61,m:10}, reg:{j:65,m:10}, maxAbschlag:null};
+  if(gebJahr===1954) return {fruh:{j:62,m:0}, reg:{j:66,m:0}, maxAbschlag:null};
+  if(gebJahr===1955) return {fruh:{j:62,m:2}, reg:{j:66,m:2}, maxAbschlag:null};
+  if(gebJahr===1956) return {fruh:{j:62,m:4}, reg:{j:66,m:4}, maxAbschlag:null};
+  if(gebJahr===1957) return {fruh:{j:62,m:6}, reg:{j:66,m:6}, maxAbschlag:null};
+  if(gebJahr===1958) return {fruh:{j:62,m:8}, reg:{j:66,m:8}, maxAbschlag:null};
+  if(gebJahr===1959) return {fruh:{j:62,m:10}, reg:{j:66,m:10}, maxAbschlag:null};
+  return {fruh:{j:63,m:0}, reg:{j:67,m:0}, maxAbschlag:null};
+}
+
+// Altersrente für Bergleute (§ 40 SGB VI)
+function altersgrenzeBergbau(gebJahr){
+  // Frühest. 50, regulär gestaffelt auf 62
+  if(gebJahr<=1951) return {fruh:{j:60,m:0}, reg:{j:60,m:0}, maxAbschlag:0};
+  return {fruh:{j:60,m:0}, reg:{j:62,m:0}, maxAbschlag:7.2};
+}
+
+// Datum addieren
+function addMonate(gebDatum, jahre, monate){
+  var d=new Date(gebDatum);
+  var totalMonate=d.getMonth()+jahre*12+monate;
+  d.setFullYear(d.getFullYear()+Math.floor(totalMonate/12));
+  d.setMonth(totalMonate%12);
+  // Rentenbeginn ist immer Monat NACH Erreichen des Alters, also +1 Monat
+  d.setDate(1);
+  d.setMonth(d.getMonth()+1);
+  return d;
+}
+
+function formatDatum(d){
+  return d.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
+}
+
+function monateZwischen(d1, d2){
+  return (d2.getFullYear()-d1.getFullYear())*12+(d2.getMonth()-d1.getMonth());
+}
+
+function calcAbschlag(fruhDatum, regDatum){
+  var monate=monateZwischen(fruhDatum,regDatum);
+  if(monate<=0) return 0;
+  return (monate*0.3).toFixed(1);
+}
+
+// Globale State-Variable für Schritt 2→3
+var rbState={};
+
+function berechneRentenbeginn(){
+  var gebStr=document.getElementById('geburtsdatum').value;
+  var sb=document.querySelector('input[name="schwerbehindert"]:checked').value==='ja';
+  var bb=document.querySelector('input[name="bergbau"]:checked').value==='ja';
+
+  var err=document.getElementById('err-1');
+  err.style.display='none';
+  if(!gebStr){err.textContent='Bitte Geburtsdatum eingeben.';err.style.display='block';return;}
+
+  var geb=new Date(gebStr);
+  var gebJahr=geb.getFullYear();
+  var gebMonat=geb.getMonth(); // 0-indexed
+
+  if(gebJahr<1940||gebJahr>2010){err.textContent='Geburtsjahr außerhalb des unterstützten Bereichs (1940–2010).';err.style.display='block';return;}
+
+  rbState={geb:geb,gebJahr:gebJahr,gebMonat:gebMonat,sb:sb,bb:bb};
+
+  var tbody=document.getElementById('rb-tbody');
+  tbody.innerHTML='';
+
+  var renten=[];
+  var minFruh=null;
+
+  // 1. Regelaltersrente (§ 35 SGB VI) — jeder hat Anspruch
+  var rag=regelAltersgrenze(gebJahr,gebMonat);
+  var regDate=addMonate(geb,rag.j,rag.m);
+  renten.push({
+    name:'Regelaltersrente',
+    para:'§ 35 SGB VI',
+    fruh:regDate,
+    reg:regDate,
+    abschlag:0,
+    hinweis:'Keine Wartezeit für Abschlag, Beginn=Regulär',
+    aktiv:true
+  });
+
+  // 2. Altersrente für langjährig Versicherte (§ 36 / § 236 SGB VI), Wartezeit 35 J.
+  var aLj=altersgrenzeLangj(gebJahr);
+  var fruhDateLj=addMonate(geb,aLj.fruh.j,aLj.fruh.m);
+  var regDateLj=addMonate(geb,aLj.reg.j,aLj.reg.m);
+  var abschlagLj=calcAbschlag(fruhDateLj,regDateLj);
+  renten.push({
+    name:'AR langjährig Versicherte',
+    para:'§ 36 / § 236 SGB VI',
+    fruh:fruhDateLj,
+    reg:regDateLj,
+    abschlag:abschlagLj,
+    hinweis:'Wartezeit: 35 Jahre',
+    aktiv:true
+  });
+
+  // 3. Altersrente für besonders langjährig Versicherte (§ 38 / § 236b SGB VI), 45 J. WZ
+  var aBLj=altersgrenzeBesLangjV2(gebJahr);
+  var fruhDateBLj=addMonate(geb,aBLj.fruh.j,aBLj.fruh.m);
+  renten.push({
+    name:'AR bes. langjährig Versicherte',
+    para:'§ 38 / § 236b SGB VI',
+    fruh:fruhDateBLj,
+    reg:fruhDateBLj,
+    abschlag:0,
+    hinweis:'Wartezeit: 45 Jahre · Kein Abschlag',
+    aktiv:true
+  });
+
+  // 4. Altersrente für schwerbehinderte Menschen (§ 37 / § 236a SGB VI)
+  if(sb){
+    var aSB=altersgrenzeSB(gebJahr);
+    var fruhDateSB=addMonate(geb,aSB.fruh.j,aSB.fruh.m);
+    var regDateSB=addMonate(geb,aSB.reg.j,aSB.reg.m);
+    var abschlagSB=calcAbschlag(fruhDateSB,regDateSB);
+    renten.push({
+      name:'AR schwerbehinderter Menschen',
+      para:'§ 37 / § 236a SGB VI',
+      fruh:fruhDateSB,
+      reg:regDateSB,
+      abschlag:abschlagSB,
+      hinweis:'Wartezeit: 35 Jahre · GdB ≥ 50',
+      aktiv:true
+    });
+  }
+
+  // 5. Altersrente für Frauen (§ 237a SGB VI) — nur Geburtsjahrgänge bis 1951
+  if(gebJahr<=1951){
+    // Frauen-Rente: frühestens 60, regulär 65; wurde für GB nach 1951 abgeschafft
+    var fruhDateF=addMonate(geb,60,0);
+    var regDateF=addMonate(geb,65,0);
+    var abschlagF=calcAbschlag(fruhDateF,regDateF);
+    renten.push({
+      name:'AR für Frauen',
+      para:'§ 237a SGB VI',
+      fruh:fruhDateF,
+      reg:regDateF,
+      abschlag:abschlagF,
+      hinweis:'Wartezeit: 15 Jahre · Nur Jg. bis 1951',
+      aktiv:true
+    });
+  }
+
+  // 6. Altersrente wegen Arbeitslosigkeit/Altersteilzeit (§ 237 SGB VI) — nur bis Jg. 1951
+  if(gebJahr<=1951){
+    var fruhDateAL=addMonate(geb,60,0);
+    var regDateAL=addMonate(geb,65,0);
+    var abschlagAL=calcAbschlag(fruhDateAL,regDateAL);
+    renten.push({
+      name:'AR wegen Arbeitslosigkeit',
+      para:'§ 237 SGB VI',
+      fruh:fruhDateAL,
+      reg:regDateAL,
+      abschlag:abschlagAL,
+      hinweis:'Nur Jg. bis 1951 · Wartezeit: 15 Jahre',
+      aktiv:true
+    });
+  }
+
+  // 7. Bergmannsrente (§ 40 SGB VI) — nur wenn Bergbau
+  if(bb){
+    var aBB=altersgrenzeBergbau(gebJahr);
+    var fruhDateBB=addMonate(geb,aBB.fruh.j,aBB.fruh.m);
+    var regDateBB=addMonate(geb,aBB.reg.j,aBB.reg.m);
+    var abschlagBB=calcAbschlag(fruhDateBB,regDateBB);
+    renten.push({
+      name:'Altersrente für Bergleute',
+      para:'§ 40 SGB VI',
+      fruh:fruhDateBB,
+      reg:regDateBB,
+      abschlag:abschlagBB,
+      hinweis:'Bergbau-Wartezeit: 25 Jahre Hauerarbeiten',
+      aktiv:true
+    });
+  }
+
+  // Cutoff: Renten, bei denen regulärer Beginn VOR 01.01.2008 → nicht anzeigen
+  var cutoff=new Date(2008,0,1);
+  renten=renten.filter(r=>{
+    if(r.reg<cutoff&&r.fruh<cutoff) return false;
+    return true;
+  });
+
+  // Frühestmöglichen Gesamtbeginn ermitteln
+  renten.forEach(r=>{
+    if(!minFruh||r.fruh<minFruh) minFruh=r.fruh;
+  });
+
+  // Tabelle füllen
+  renten.forEach(r=>{
+    var abschlagStr=parseFloat(r.abschlag)===0?
+      '<span class="ok">kein Abschlag</span>':
+      '<span class="abschlag">max. '+r.abschlag+' %</span>';
+    var fruhStr=formatDatum(r.fruh);
+    var regStr=formatDatum(r.reg);
+    var row=document.createElement('tr');
+    row.innerHTML=`<td><strong>${r.name}</strong><br><span style="font-size:9px;color:var(--text-muted)">${r.hinweis}</span></td><td style="font-size:10px;">${r.para}</td><td>${fruhStr}</td><td>${regStr}</td><td>${abschlagStr}</td>`;
+    tbody.appendChild(row);
+  });
+
+  // Intro-Text
+  var alter2026=2026-gebJahr;
+  document.getElementById('rb-intro').textContent=
+    'Geburtsdatum: '+geb.toLocaleDateString('de-DE')+
+    ' · Alter 2026: ca. '+alter2026+' Jahre · '+
+    'Frühestmöglicher Rentenbeginn: '+formatDatum(minFruh);
+
+  document.getElementById('rb-hinweis').textContent=
+    'Die aufgeführten Rentenarten setzen unterschiedliche Wartezeiten voraus (15, 35 oder 45 Beitragsjahre). '+
+    'Ob Sie die Wartezeit erfüllen, entnehmen Sie Ihrer Renteninformation. '+
+    'Abschläge sind dauerhaft und betragen 0,3 % pro Monat vorzeitiger Inanspruchnahme (§ 77 SGB VI).';
+
+  // Select in Schritt 3 befüllen
+  var sel=document.getElementById('rentenart-hoehe');
+  sel.innerHTML='<option value="">— bitte wählen —</option>';
+  rbState.renten=renten;
+  renten.forEach(function(r,i){
+    var opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=r.name;
+    sel.appendChild(opt);
+  });
+
+  // Wunsch-Beginn vorbelegen
+  document.getElementById('wunsch-beginn').value=
+    minFruh.getFullYear()+'-'+(String(minFruh.getMonth()+1).padStart(2,'0'));
+
+  goStep(2);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RENTENHÖHE-LOGIK
+   Rentenformel: Monatsrente = EP × ZF × RAF × aRW
+   EP  = persönliche Entgeltpunkte
+   ZF  = Zugangsfaktor (1,000 bei regulärem Beginn; -0,003/Monat vorzeitig; +0,005/Monat Aufschub)
+   RAF = Rentenartfaktor (1,0 für Altersrente)
+   aRW = aktueller Rentenwert
+   ══════════════════════════════════════════════════════════════ */
+
+function calcZF(){
+  var selIdx=document.getElementById('rentenart-hoehe').value;
+  var wunschStr=document.getElementById('wunsch-beginn').value;
+  var zfEl=document.getElementById('zf');
+
+  if(selIdx===''||!wunschStr||!rbState.renten){
+    return;
+  }
+
+  var r=rbState.renten[parseInt(selIdx)];
+  if(!r){return;}
+
+  var wunsch=new Date(wunschStr+'-01');
+  var fruh=new Date(r.fruh.getFullYear(),r.fruh.getMonth(),1);
+  var reg=new Date(r.reg.getFullYear(),r.reg.getMonth(),1);
+
+  // Sicherstellen: Wunsch nicht vor frühestmöglich
+  if(wunsch<fruh) wunsch=fruh;
+
+  var diffVorher=monateZwischen(wunsch,reg); // positiv = vor Regelbeginn
+  var diffNachher=monateZwischen(reg,wunsch); // positiv = nach Regelbeginn
+
+  var zf=1.000;
+  if(diffVorher>0){
+    zf=1-(diffVorher*0.003);
+    if(zf<0) zf=0;
+  } else if(diffNachher>0){
+    zf=1+(diffNachher*0.005);
+  }
+
+  zfEl.value=zf.toLocaleString('de-DE',{minimumFractionDigits:3,maximumFractionDigits:3});
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('rentenart-hoehe').addEventListener('change',calcZF);
+  document.getElementById('wunsch-beginn').addEventListener('change',calcZF);
+});
+
+function berechneRentenhoehe(){
+  var epStr=document.getElementById('ep').value;
+  var epZusatzStr=document.getElementById('ep-zusatz').value;
+  var arwStr=document.getElementById('arw').value;
+  var zfStr=document.getElementById('zf').value;
+  var selIdx=document.getElementById('rentenart-hoehe').value;
+  var wunschStr=document.getElementById('wunsch-beginn').value;
+
+  var err=document.getElementById('err-3');
+  err.style.display='none';
+
+  var ep=parseDE(epStr);
+  if(isNaN(ep)||ep<=0){err.textContent='Bitte gültige Entgeltpunkte eingeben.';err.style.display='block';return;}
+
+  var arw=parseFloat(arwStr);
+  var zf=parseDE(zfStr)||1.000;
+  var raf=1.0; // Altersrente
+
+  // EP gesamt = laufende + erwartete Zusatz-EP
+  var epZusatz=parseDE(epZusatzStr)||0;
+  var epGesamt=ep+epZusatz;
+
+  var monatsRente=epGesamt*zf*raf*arw;
+
+  // Abschlag in %
+  var abschlagPct=((1-zf)*100);
+
+  // Rentenart-Bezeichnung
+  var rentenartName='Altersrente';
+  if(selIdx!==''&&rbState.renten){
+    rentenartName=rbState.renten[parseInt(selIdx)].name;
+  }
+
+  var wunschDatum=wunschStr?new Date(wunschStr+'-01'):null;
+
+  // Formel anzeigen
+  var formelText='Rentenformel: '+
+    epGesamt.toLocaleString('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4})+' EP'+
+    ' × '+zf.toLocaleString('de-DE',{minimumFractionDigits:3,maximumFractionDigits:3})+' ZF'+
+    ' × '+raf.toFixed(1)+' RAF'+
+    ' × '+arw.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' € aRW';
+  document.getElementById('rh-formel').textContent=formelText;
+
+  // Zeilen
+  var rows=[
+    {label:'Persönliche Entgeltpunkte (aktuell)',val:ep.toLocaleString('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4})+' EP'},
+    {label:'Erwartete Entgeltpunkte bis Rente',val:epZusatz>0?epZusatz.toLocaleString('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4})+' EP':'(nicht angegeben)'},
+    {label:'Entgeltpunkte gesamt',val:epGesamt.toLocaleString('de-DE',{minimumFractionDigits:4,maximumFractionDigits:4})+' EP'},
+    {label:'Zugangsfaktor (ZF)',val:zf.toLocaleString('de-DE',{minimumFractionDigits:3,maximumFractionDigits:3})},
+    {label:'Rentenartfaktor (RAF)',val:'1,000 (Altersrente)'},
+    {label:'Aktueller Rentenwert (aRW)',val:arw.toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'},
+    {label:'Gewählte Rentenart',val:rentenartName},
+    {label:'Rentenbeginn',val:wunschDatum?wunschDatum.toLocaleDateString('de-DE',{month:'long',year:'numeric'}):'—'},
+  ];
+
+  var rowsEl=document.getElementById('rh-rows');
+  rowsEl.innerHTML='';
+  rows.forEach(function(r){
+    var div=document.createElement('div');
+    div.className='rh-row';
+    div.innerHTML='<span class="rh-label">'+r.label+'</span><span class="rh-val">'+r.val+'</span>';
+    rowsEl.appendChild(div);
+  });
+
+  document.getElementById('rh-gesamt').textContent=fmtEuro(monatsRente);
+
+  var abschlagEl=document.getElementById('rh-abschlag-info');
+  if(abschlagPct>0.001){
+    abschlagEl.textContent='Dauerhafte Rentenminderung durch Abschlag: '+abschlagPct.toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+    abschlagEl.style.color='#e07070';
+  } else if(zf>1.001){
+    abschlagEl.textContent='Rentenerhöhung durch Aufschub: +'+((zf-1)*100).toLocaleString('de-DE',{minimumFractionDigits:1,maximumFractionDigits:1})+' %';
+    abschlagEl.style.color='var(--accent-lt)';
+  } else {
+    abschlagEl.textContent='Kein Abschlag (regulärer Rentenbeginn)';
+    abschlagEl.style.color='var(--accent-lt)';
+  }
+
+  goStep(4);
+}
+
+function resetAll(){
+  rbState={};
+  document.getElementById('geburtsdatum').value='';
+  document.querySelector('input[name="schwerbehindert"][value="nein"]').checked=true;
+  document.querySelector('input[name="bergbau"][value="nein"]').checked=true;
+  document.getElementById('ep').value='';
+  document.getElementById('ep-zusatz').value='';
+  document.getElementById('zf').value='';
+  document.getElementById('wunsch-beginn').value='';
+  document.getElementById('rentenart-hoehe').innerHTML='<option value="">— bitte wählen —</option>';
+  goStep(1);
+}
+</script>
+</body>
+</html>
