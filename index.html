@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rentenbeginn- & Rentenhöhenrechner</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230c1410'/%3E%3Ctext y='.9em' font-size='90' font-family='Georgia,serif' fill='%235d9e7a'%3Eg%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230c1410'/><text x='16' y='23' font-family='Georgia,serif' font-size='22' font-weight='700' fill='%235d9e7a' text-anchor='middle'>g</text></svg>">
 <style>
 
 /* ═══════════════════════════════════════════════════════════════
@@ -101,6 +101,8 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 .renten-table tr:hover td{background:var(--accent-dim);}
 .renten-table .disabled td{opacity:.4;}
 
+#gtools-link:hover{color:var(--accent);border-color:var(--accent);}
+
 /* Schritt-Tabs */
 .steps{display:flex;gap:4px;margin-bottom:28px;}
 .step{flex:1;padding:8px 4px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--border);color:var(--text-muted);position:relative;}
@@ -148,7 +150,10 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
   <header style="text-align:center;margin-bottom:40px;">
     <h1><span>Renten</span>rechner</h1>
-    <p class="subtitle">Rentenbeginn & Rentenhöhe · §§ 35–42 SGB VI</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:4px;">
+      <p class="subtitle" style="margin:0;">Rentenbeginn & Rentenhöhe · §§ 35–42 SGB VI</p>
+      <a href="https://rglowania.github.io/gtools/" id="gtools-link" style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text-muted);text-decoration:none;border:1px solid var(--border);padding:3px 10px;transition:all .2s;">Part of gTools ↗</a>
+    </div>
   </header>
 
   <!-- Schritt-Anzeige -->
@@ -342,7 +347,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
   <p class="disclaimer">Alle Berechnungen sind Näherungswerte auf Basis der jeweils angegebenen Rechtsgrundlagen. Individuelle Faktoren bleiben unberücksichtigt. Kein Ersatz für individuelle Steuer- oder Rechtsberatung · Alle Angaben ohne Gewähr</p>
 </div>
 
-<footer>© Robin Glowania &nbsp;·&nbsp; Zuletzt aktualisiert: 07.05.2026</footer>
+<footer>© Robin Glowania &nbsp;·&nbsp; Zuletzt aktualisiert: 18.05.2026</footer>
 
 <script>
 /* ── Theme ─────────────────────────────────────────────────── */
@@ -437,27 +442,9 @@ function altersgrenzeLangj(gebJahr){
   return {fruh:{j:63,m:0}, reg:{j:67,m:0}, maxAbschlag:null};
 }
 
-// Altersrente für besonders langjährig Versicherte (§ 38 SGB VI, § 236b SGB VI)
-// 45 WZ-Jahre → abschlagsfrei; kein vorzeitiger Bezug mit Abschlag
+// Altersrente für besonders langjährig Versicherte (§ 38 / § 236b SGB VI)
+// 45 WZ-Jahre → abschlagsfrei; kein vorzeitiger Bezug mit Abschlag möglich
 function altersgrenzeBesLangj(gebJahr){
-  if(gebJahr<=1951) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
-  if(gebJahr===1952) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
-  if(gebJahr===1953) return {fruh:{j:63,m:2}, reg:{j:63,m:2}};
-  if(gebJahr===1954) return {fruh:{j:63,m:4}, reg:{j:63,m:4}};
-  if(gebJahr===1955) return {fruh:{j:63,m:6}, reg:{j:63,m:6}};
-  if(gebJahr===1956) return {fruh:{j:63,m:8}, reg:{j:63,m:8}};
-  if(gebJahr===1957) return {fruh:{j:63,m:10}, reg:{j:63,m:10}};
-  if(gebJahr===1958) return {fruh:{j:64,m:0}, reg:{j:64,m:0}};
-  if(gebJahr===1959) return {fruh:{j:64,m:2}, reg:{j:64,m:2}};
-  if(gebJahr===1960) return {fruh:{j:64,m:4}, reg:{j:64,m:4}};
-  if(gebJahr===1961) return {fruh:{j:64,m:6}, reg:{j:64,m:6}};
-  if(gebJahr===1962) return {fruh:{j:64,m:8}, reg:{j:64,m:8}};
-  if(gebJahr===1963) return {fruh:{j:64,m:10}, reg:{j:64,m:10}};
-  return {fruh:{j:65,m:0}, reg:{j:65,m:0}};
-}
-
-// Korrigierte Version
-function altersgrenzeBesLangjV2(gebJahr){
   if(gebJahr<=1952) return {fruh:{j:63,m:0}, reg:{j:63,m:0}};
   if(gebJahr===1953) return {fruh:{j:63,m:2}, reg:{j:63,m:2}};
   if(gebJahr===1954) return {fruh:{j:63,m:4}, reg:{j:63,m:4}};
@@ -473,47 +460,56 @@ function altersgrenzeBesLangjV2(gebJahr){
   return {fruh:{j:65,m:0}, reg:{j:65,m:0}};
 }
 
-// Altersrente für schwerbehinderte Menschen (§ 37 SGB VI, § 236a SGB VI)
+// Altersrente für schwerbehinderte Menschen (§ 37 / § 236a SGB VI)
+// Anhebung der abschlagsfreien Altersgrenze von 63 auf 65 (für GB 1952–1963)
+// Vorzeitige Inanspruchnahme: Anhebung von 60 auf 62 (gleicher Fahrplan)
 function altersgrenzeSB(gebJahr){
-  if(gebJahr<=1940) return {fruh:{j:60,m:0}, reg:{j:63,m:0}, maxAbschlag:10.8};
-  if(gebJahr===1941) return {fruh:{j:60,m:0}, reg:{j:63,m:3}, maxAbschlag:null};
-  if(gebJahr===1942) return {fruh:{j:60,m:0}, reg:{j:63,m:6}, maxAbschlag:null};
-  if(gebJahr===1943) return {fruh:{j:60,m:0}, reg:{j:63,m:9}, maxAbschlag:null};
-  if(gebJahr===1944) return {fruh:{j:60,m:0}, reg:{j:64,m:0}, maxAbschlag:null};
-  if(gebJahr<=1945) return {fruh:{j:60,m:3}, reg:{j:64,m:3}, maxAbschlag:null};
-  if(gebJahr===1946) return {fruh:{j:60,m:6}, reg:{j:64,m:6}, maxAbschlag:null};
-  if(gebJahr===1947) return {fruh:{j:60,m:9}, reg:{j:64,m:9}, maxAbschlag:null};
-  if(gebJahr===1948) return {fruh:{j:61,m:0}, reg:{j:65,m:0}, maxAbschlag:null};
-  if(gebJahr===1949) return {fruh:{j:61,m:2}, reg:{j:65,m:2}, maxAbschlag:null};
-  if(gebJahr===1950) return {fruh:{j:61,m:4}, reg:{j:65,m:4}, maxAbschlag:null};
-  if(gebJahr===1951) return {fruh:{j:61,m:6}, reg:{j:65,m:6}, maxAbschlag:null};
-  if(gebJahr===1952) return {fruh:{j:61,m:8}, reg:{j:65,m:8}, maxAbschlag:null};
-  if(gebJahr===1953) return {fruh:{j:61,m:10}, reg:{j:65,m:10}, maxAbschlag:null};
-  if(gebJahr===1954) return {fruh:{j:62,m:0}, reg:{j:66,m:0}, maxAbschlag:null};
-  if(gebJahr===1955) return {fruh:{j:62,m:2}, reg:{j:66,m:2}, maxAbschlag:null};
-  if(gebJahr===1956) return {fruh:{j:62,m:4}, reg:{j:66,m:4}, maxAbschlag:null};
-  if(gebJahr===1957) return {fruh:{j:62,m:6}, reg:{j:66,m:6}, maxAbschlag:null};
-  if(gebJahr===1958) return {fruh:{j:62,m:8}, reg:{j:66,m:8}, maxAbschlag:null};
-  if(gebJahr===1959) return {fruh:{j:62,m:10}, reg:{j:66,m:10}, maxAbschlag:null};
-  return {fruh:{j:63,m:0}, reg:{j:67,m:0}, maxAbschlag:null};
+  if(gebJahr<=1951) return {fruh:{j:60,m:0}, reg:{j:63,m:0}};
+  if(gebJahr===1952) return {fruh:{j:60,m:6}, reg:{j:63,m:6}};
+  if(gebJahr===1953) return {fruh:{j:60,m:7}, reg:{j:63,m:7}};
+  if(gebJahr===1954) return {fruh:{j:60,m:8}, reg:{j:63,m:8}};
+  if(gebJahr===1955) return {fruh:{j:60,m:9}, reg:{j:63,m:9}};
+  if(gebJahr===1956) return {fruh:{j:60,m:10}, reg:{j:63,m:10}};
+  if(gebJahr===1957) return {fruh:{j:60,m:11}, reg:{j:63,m:11}};
+  if(gebJahr===1958) return {fruh:{j:61,m:0}, reg:{j:64,m:0}};
+  if(gebJahr===1959) return {fruh:{j:61,m:2}, reg:{j:64,m:2}};
+  if(gebJahr===1960) return {fruh:{j:61,m:4}, reg:{j:64,m:4}};
+  if(gebJahr===1961) return {fruh:{j:61,m:6}, reg:{j:64,m:6}};
+  if(gebJahr===1962) return {fruh:{j:61,m:8}, reg:{j:64,m:8}};
+  if(gebJahr===1963) return {fruh:{j:61,m:10}, reg:{j:64,m:10}};
+  return {fruh:{j:62,m:0}, reg:{j:65,m:0}};
 }
 
 // Altersrente für Bergleute (§ 40 SGB VI)
+// 62 Jahre + 25 Jahre Hauerarbeit; kein vorzeitiger Bezug mit Abschlag
 function altersgrenzeBergbau(gebJahr){
-  // Frühest. 50, regulär gestaffelt auf 62
-  if(gebJahr<=1951) return {fruh:{j:60,m:0}, reg:{j:60,m:0}, maxAbschlag:0};
-  return {fruh:{j:60,m:0}, reg:{j:62,m:0}, maxAbschlag:7.2};
+  // Anhebung der Altersgrenze von 60 auf 62 für GB 1940–1951 (§ 238 SGB VI)
+  if(gebJahr<=1939) return {fruh:{j:60,m:0}, reg:{j:60,m:0}};
+  if(gebJahr<=1951){
+    // Stufenweise Anhebung 60 → 62 in 2-Monats-Schritten (vereinfacht)
+    var monateZus=Math.min((gebJahr-1939)*2,24);
+    return {fruh:{j:60+Math.floor(monateZus/12),m:monateZus%12}, reg:{j:60+Math.floor(monateZus/12),m:monateZus%12}};
+  }
+  return {fruh:{j:62,m:0}, reg:{j:62,m:0}};
 }
 
-// Datum addieren
+// Datum addieren — Rentenbeginn nach § 99 Abs. 1 SGB VI
+// Erreichen der Altersgrenze = Vortag des "Altersgrenze+1-Geburtstags"
+// Wer am 1. eines Monats geboren ist, erreicht die Altersgrenze am letzten Tag des Vormonats
+// und kann ab dem 1. dieses Monats Rente beziehen.
 function addMonate(gebDatum, jahre, monate){
-  var d=new Date(gebDatum);
+  var d=new Date(gebDatum.getFullYear(),gebDatum.getMonth(),gebDatum.getDate());
   var totalMonate=d.getMonth()+jahre*12+monate;
   d.setFullYear(d.getFullYear()+Math.floor(totalMonate/12));
   d.setMonth(totalMonate%12);
-  // Rentenbeginn ist immer Monat NACH Erreichen des Alters, also +1 Monat
+  // d ist jetzt der Tag, an dem die Altersgrenze (Lebensjahr) erreicht wird.
+  // Wenn Geburtstag = 1. des Monats: Rentenbeginn ab diesem Monat (gleicher Monat).
+  // Sonst: Rentenbeginn ab Folgemonat.
+  var tag=gebDatum.getDate();
   d.setDate(1);
-  d.setMonth(d.getMonth()+1);
+  if(tag!==1){
+    d.setMonth(d.getMonth()+1);
+  }
   return d;
 }
 
@@ -586,7 +582,7 @@ function berechneRentenbeginn(){
   });
 
   // 3. Altersrente für besonders langjährig Versicherte (§ 38 / § 236b SGB VI), 45 J. WZ
-  var aBLj=altersgrenzeBesLangjV2(gebJahr);
+  var aBLj=altersgrenzeBesLangj(gebJahr);
   var fruhDateBLj=addMonate(geb,aBLj.fruh.j,aBLj.fruh.m);
   renten.push({
     name:'AR bes. langjährig Versicherte',
@@ -664,13 +660,6 @@ function berechneRentenbeginn(){
       aktiv:true
     });
   }
-
-  // Cutoff: Renten, bei denen regulärer Beginn VOR 01.01.2008 → nicht anzeigen
-  var cutoff=new Date(2008,0,1);
-  renten=renten.filter(r=>{
-    if(r.reg<cutoff&&r.fruh<cutoff) return false;
-    return true;
-  });
 
   // Frühestmöglichen Gesamtbeginn ermitteln
   renten.forEach(r=>{
